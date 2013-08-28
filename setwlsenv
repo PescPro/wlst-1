@@ -1,0 +1,108 @@
+#!/bin/bash
+# Who: TvE
+#What: central env script
+# Why: makes life easy. Based on standard locations
+
+### Env specific
+
+
+# ORACLE_BASE should have been /apps/<user>. Now it is not very scriptable.
+# Bepaal base dmv ownership
+APPROOT=$(ls -ld /apps/*|grep $(whoami)|awk '{print $NF }')
+
+ORACLE_BASE=${ORACLE_BASE:-${APPROOT:-/apps/onbekend}} ; export ORACLE_BASE
+
+# bepalen domain.
+DOMAIN=${1-(ls ${ORACLE_BASE}/domains/|head -1)}
+export WL_DOMAIN=${DOMAIN:-domain_onbekend}
+
+
+### Functions
+
+#
+# ClrPath: remove duplicate and invalid directories
+#          input($1)    : Directories separated with colon (:), like with $PATH
+#         output(stdout): same as input, except invalid & duplicates have been removed
+#  Variables: pth[*]=Array with the new string of directories
+#                 np=Number of pathstrings/directories/elements in result
+#                  i=fieldnumber of record if used like $i
+#                 NF=number of fields in record
+#
+
+ ClrPath () {
+   echo "$1:" |
+   awk '
+   BEGIN {
+     FS = ":";
+     np = 0;
+   }
+   {
+     for (i = 1; i <= NF; i++) {
+       found = 0;
+       for (j = 0; j < np; j++) {
+         if (pth[j] == $i) {                                            # field/directory already in result?
+           found = 1;                                                   # directory already found.
+           break;                                                       # skip
+         }
+       }
+       if (found == 0) {
+         command = sprintf("test -d %s", $i == "" ? "blurp" : $i)       # build command string to test direc
+tory presence
+         if (system(command) == 0) {                                    # Directory valid?
+           pth[np] = $i;                                                # add directory to result
+           np++;
+         }
+       }
+     }
+   }
+   END {
+     for (i = 0; i < np - 1; i++) {     # print result to stdou
+       printf "%s:", pth[i];
+     }
+     printf "%s\n", pth[i];
+   }'
+ } # End of ClrPath
+
+
+
+### generic
+
+export JAVA_HOME=$ORACLE_BASE/product/jdk
+export JAVA_VENDOR=Sun
+
+export MW_HOME=$ORACLE_BASE/product/Middleware
+export WL_HOME=$MW_HOME/wlserver_10.3
+export WL_DOMAIN_DIR=$ORACLE_BASE/domains/$WL_DOMAIN
+
+# SOA stuff
+export SOA_ORACLE_HOME=$MW_HOME/Oracle_SOA1
+
+# Webtier stuff
+export ORACLE_HOME=$MW_HOME/Oracle_WT1
+export ORACLE_INSTANCE=$(ls -d1 $ORACLE_HOME/instances/*instance* 2>/dev/null)
+
+
+
+export SCRIPTDIR=$ORACLE_BASE/scripts/startstop
+
+# clear PATH
+PATH=$(ClrPath "$JAVA_HOME/bin:$WL_HOME/common/bin:$SOA_ORACLE_HOME/bin:$WL_DOMAIN_DIR/bin:$WL_HOME/server/bin:$ORACLE_HOME/opmn/bin:$SCRIPTDIR:$PATH:/usr/sbin:$ORACLE_BASE/scripts")
+export PATH
+
+
+#### aliasses
+
+# add X11 forwarding through sudo
+# DISPLAY and XAUTH are variables passed through sudo (in your personal account)
+alias xadd='xauth add ${XAUTH:-dummy}'
+
+alias lt='ls -ltrh'
+alias oh='cd $ORACLE_HOME'
+alias ob='cd $ORACLE_BASE'
+alias wlst='wlst.sh'
+alias ohstail='tail -f $ORACLE_INSTANCE/diagnostics/logs/OHS/$(basename $ORACLE_INSTANCE|cut -d_ -f1)_ohs*/$(basename $ORACLE_INSTANCE|cut -d_ -f1)_ohs*.log'
+
+. $ORACLE_BASE/scripts/sidprompt
+
+cd ${WL_DOMAIN_DIR:-~}
+
