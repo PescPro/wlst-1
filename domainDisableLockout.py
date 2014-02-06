@@ -1,0 +1,1 @@
+cd('/SecurityConfiguration/IDMO_domain/Realms/myrealm/UserLockoutManager/UserLockoutManager')cmo.setLockoutEnabled(false)
