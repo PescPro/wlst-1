@@ -2,9 +2,9 @@ AdminServerHost='gdisx1110'
 AdminServerListenPort='7001'
 AdminServerName='AdminServer'
 AdminUser='weblogic'
-AdminUserPW='WFMJustisa1'
+AdminUserPW='geheim'
 OiDAccount='cn=orcladmin,cn=Users, dc=gdi,dc=minvenj,dc=nl'
-OiDAccountPW='wfmidma1'
+OiDAccountPW='geheim'
 # needed for initial serverStart
 jvmProps='-XX:MaxPermSize=150m,-Xmx512m'
 
