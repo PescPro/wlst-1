@@ -1,0 +1,34 @@
+# Set some constants
+username='weblogic'
+password='osbacc@gdi'
+
+import socket
+localhost = socket.gethostname()
+import os
+domain = os.getenv('WL_DOMAIN')
+domain_dir= os.getenv('WL_DOMAIN_DIR')
+mwHome = os.getenv('MW_HOME')
+print mwHome
+url = 't3://' + localhost + ':7777777001'
+print url
+
+
+print "status Admin en Managed Servers van" + domain
+
+connect(username, password,url)
+servers = domainRuntimeService.getServerRuntimes();
+for server in servers:
+        print 'SERVER: ' + server.getName();
+        print '**************************************************'
+        print  serverName
+        print '**************************************************'
+        print '##### Server State           #####', server.getState()
+        print '##### Server ListenAddress   #####', server.getListenAddress()
+        print '##### Server ListenPort      #####', server.getListenPort()
+        print '##### Server Health State    #####', server.getHealthState()
+
+	print 'SERVER: ' + server.getName();
+	
+
+
+
